@@ -16,7 +16,7 @@ Recreating the original provided both an understanding of how the geometry was g
 
 To both exploit symmetries and use the same VBO I edited the vertex shader used in the tutorial. Now to take two coordinate vectors per vertex and return an interpolation between them. Also applying an orientation matrix so that the same geometry can be rotated in space to form each side of the cube. since all vertices in a face have the same color, I made this a uniform variable instead of stored for each vertex in the VBO.
 
-'''
+```
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 bPos;
@@ -36,4 +36,4 @@ void main()
    gl_Position = proj * view * model * ortn * vec4(aPos * (1.0 - morph) + bPos * morph, 1.0);
    vertcolor = color;
 }
-'''
+```
