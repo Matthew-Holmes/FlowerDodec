@@ -37,3 +37,5 @@ void main()
    vertcolor = color;
 }
 ```
+
+The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, with the centre of the square at (x, y, z) of (0, 0, 1), hence the circular symettry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values (so not a true interpolation)
