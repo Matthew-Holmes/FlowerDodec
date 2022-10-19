@@ -75,3 +75,24 @@ VBO VBO1(&square.vertices[0], square.vertices.size() * sizeof(GLfloat));
 // Generates Element Buffer Object and links it to indices
 EBO EBO1(&square.indices[0], square.indices.size() * sizeof(GLuint));
 ```
+
+#### Storing face data
+
+All that remains is to keep track of the orientations of each of the six faces and their colour, a data class `FaceData` stores this:
+```
+class FaceData {
+public:
+	FaceData(glm::mat4 ort, glm::vec3 col) : orientation(ort), color(col) {};
+	glm::mat4 orientation;
+	glm::vec3 color;
+};
+```
+And so we can fill a vector with data for each of the six faces:
+	std::vector<FaceData> cubeFaceData;
+	cubeFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+		// orientation matrix
+		// then color
+	// four more faces to fill
