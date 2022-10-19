@@ -41,3 +41,36 @@ void main()
 The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, with the centre of the square at (x, y, z) of (0, 0, 1), hence the circular symmetry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values than in a standard interpolation. (greater than 1)
 
 The VBO stores the vertices on the surface of the face, and their normalised counterparts one after the other in the VBO. This means the VBO can persist for the lifetime of the program, just changing the time variable at each update. Since the `morph` value is a function of time.
+
+#### The `SurfaceSquare` class
+
+To compute the necessary mesh coordinates and converte them to vertices and indices for the VBO a class `SurfaceSquare` was created, declared as follows:
+```
+class SurfaceSquare {
+public:
+	SurfaceSquare(GLfloat xi, GLfloat yi, GLfloat xf, GLfloat yf,
+		GLuint xdv, GLuint ydv);
+	void generate();
+	std::vector<GLfloat> vertices;
+	std::vector<GLuint> indices;	
+private:
+	void genMesh();
+	void genVrts();
+	void genInds();
+
+	const GLfloat x_initial, y_initial, x_final, y_final;
+	const GLuint x_div, y_div;
+	const GLuint numVert, numInd;
+	std::vector<GLfloat> x_intervals, y_intervals; // mesh variables
+
+};
+```
+Once provided with initial coordinates for the square, and a granularity for the mesh divisions, we can called `generate()` to fill vectors with the vertices and indices required, and then fill the buffers:
+```
+	SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
+	square.generate();
+   // Generates Vertex Buffer Object and links it to vertices
+	VBO VBO1(&square.vertices[0], square.vertices.size() * sizeof(GLfloat));
+	// Generates Element Buffer Object and links it to indices
+	EBO EBO1(&square.indices[0], square.indices.size() * sizeof(GLuint));
+```
