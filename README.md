@@ -88,11 +88,13 @@ public:
 };
 ```
 And so we can fill a vector with data for each of the six faces:
-	std::vector<FaceData> cubeFaceData;
-	cubeFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		glm::vec3(0.0f, 1.0f, 0.0f));
-		// orientation matrix
-		// then color
-	// four more faces to fill
+```
+std::vector<FaceData> cubeFaceData;
+cubeFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+cubeFaceData.emplace_back(
+	glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+	glm::vec3(0.0f, 1.0f, 0.0f));
+	// orientation matrix
+	// then color
+// four more faces to fill
+```
