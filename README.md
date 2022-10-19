@@ -98,3 +98,13 @@ cubeFaceData.emplace_back(
 	// then color
 // four more faces to fill
 ```
+
+#### Drawing the faces
+After making sure the time uniform variable has been updated, and our buffers are in order, we can draw the shape on each update using the following loop:
+```
+for (FaceData face : cubeFaceData) {
+	glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation)); // update orientation uniform for vertex shader
+	glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);         // update color uniform for vertex shader
+	glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);    // draw
+}
+```
