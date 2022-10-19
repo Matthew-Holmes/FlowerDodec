@@ -69,6 +69,7 @@ Once provided with initial coordinates for the square, and a granularity for the
 ```
 SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
 square.generate();
+
 // Generates Vertex Buffer Object and links it to vertices
 VBO VBO1(&square.vertices[0], square.vertices.size() * sizeof(GLfloat));
 // Generates Element Buffer Object and links it to indices
