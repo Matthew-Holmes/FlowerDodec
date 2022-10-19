@@ -151,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EBO.h" />
+    <ClInclude Include="FaceData.h" />
     <ClInclude Include="shaderClass.h" />
     <ClInclude Include="SurfaceSquare.h" />
     <ClInclude Include="VAO.h" />

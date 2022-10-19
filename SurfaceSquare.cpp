@@ -1,5 +1,6 @@
 #include "SurfaceSquare.h"
 
+
 SurfaceSquare::SurfaceSquare(GLfloat xi, GLfloat yi, GLfloat xf, GLfloat yf,
 							 GLuint xdv, GLuint ydv) :
 	x_initial(xi), y_initial(yi), x_final(xf), y_final(yf),
@@ -16,20 +17,17 @@ void SurfaceSquare::genMesh() {
 }
 
 void SurfaceSquare::genVrts() {
-	int i = 0;
-	int j = 0;
+	GLfloat norm;
 	for (auto x : x_intervals) {
 		for (auto y : y_intervals) {
+			norm = std::sqrt(x * x + y * y + 1);
 			vertices.push_back(x);
 			vertices.push_back(y);
-			vertices.push_back(0.0f); // placeholder z value for now
-			// get the colors // placeholders rightn now
-			vertices.push_back(i % 2);
-			vertices.push_back(j % 2);
-			vertices.push_back((i * j) % 2);
-			i++;
+			vertices.push_back(1);
+			vertices.push_back(x / norm);
+			vertices.push_back(y / norm);
+			vertices.push_back(1.0f / norm);
 		}
-		j++;
 	}
 }
 
@@ -51,5 +49,3 @@ void SurfaceSquare::generate() {
 	genVrts();
 	genInds();
 }
-
-								

@@ -3,6 +3,7 @@
 
 #include<glad/glad.h>
 #include <vector>
+#include <cmath>
 
 class SurfaceSquare {
 public:

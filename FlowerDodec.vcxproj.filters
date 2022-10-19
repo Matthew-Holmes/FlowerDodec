@@ -64,5 +64,8 @@
     <ClInclude Include="SurfaceSquare.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FaceData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

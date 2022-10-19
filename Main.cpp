@@ -11,6 +11,7 @@
 #include "VAO.h"
 
 #include "SurfaceSquare.h"
+#include "FaceData.h"
 
 const unsigned int width = 800;
 const unsigned int height = 800;
@@ -69,7 +70,7 @@ int main() {
 	VAO VAO1;
 	VAO1.Bind();
 
-	SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 100, 100);
+	SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
 	square.generate();
 
 	// TODO update VBO to work with vectors
@@ -81,17 +82,52 @@ int main() {
 	// Links VBO to VAO
 	// link attributes for coordinates
 	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0 );
-	// link attributes for colours
-	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)) );
+	// link attribute for the morph targets
+	VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	// Unbind all to prevent accidentally modifying them
 	VAO1.Unbind();
 	VBO1.Unbind();
 	EBO1.Unbind();
 
 	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
+	GLfloat prevTime = glfwGetTime();
+
+	// generate the data about the cube faces
+	std::vector<FaceData> cubeFaceData;
+	cubeFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		glm::vec3(1.0f, 0.0f, 1.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
+		glm::vec3(0.0f, 0.0f, 1.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+		glm::vec3(0.0f, 1.0f, 1.0f));
+	cubeFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+		glm::vec3(1.0f, 1.0f, 0.0f));
+
 
 	glEnable(GL_DEPTH_TEST);
+
+	// initialise the matrices we'll need
+	glm::mat4 model = glm::mat4(1.0f); // leave as is since model in the centre
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 proj = glm::mat4(1.0f);
+	glm::mat4 ortn = glm::mat4(1.0f); // orientation matrix
+
+	// move the world down 0.5 and forward 2.0
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
+	// set our camera,		FOV					aspect ratio		closest furthest we can se
+	proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
+
+	// lighting
+	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	// loop until the window is closed
 	while (!glfwWindowShouldClose(window)) {
@@ -102,23 +138,14 @@ int main() {
 		// Tell OpenGL which Shader Program we want to use
 		shaderProgram.Activate();
 
-		double crntTime = glfwGetTime();
+		GLfloat crntTime = glfwGetTime();
 		if (crntTime - prevTime >= 1.0f / 60.0f)
 		{
 			rotation += 0.5f;
 			prevTime = crntTime;
+			model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+
 		}
-
-		// initialise the matrices we'll need
-		glm::mat4 model = glm::mat4(1.0f); // leave as is since model in the centre
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 proj = glm::mat4(1.0f);
-
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		// move the world down 0.5 and forward 2.0
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f)); 
-		// set our camera,		FOV					aspect ratio		closest furthest we can se
-		proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
 
 		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -126,12 +153,27 @@ int main() {
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 		int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+		int ortnLoc = glGetUniformLocation(shaderProgram.ID, "ortn");
+		glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(ortn));
+		int morphLoc = glGetUniformLocation(shaderProgram.ID, "morph");
+		glUniform1f(morphLoc, 5 - std::abs(1.6 * std::fmod(prevTime, 7.5f) - 6));
+		int colorLoc = glGetUniformLocation(shaderProgram.ID, "color");
+
+		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"),
+			lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"),
+			lightPos.x, lightPos.y, lightPos.z);
 
 		// Bind the VAO so OpenGL knows to use it
 		VAO1.Bind();
 		// Draw primitives, number of indices, datatype of indices, index of indices
 		// generalise so we don't need to keep track of the number of indices
-		glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);
+		for (FaceData face : cubeFaceData) {
+			glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation));
+			glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);
+			glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);
+		}
+		
 		// Swap the back buffer with the front buffer
 		glfwSwapBuffers(window);
 		// Take care of all GLFW events
