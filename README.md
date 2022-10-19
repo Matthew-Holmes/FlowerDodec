@@ -10,7 +10,7 @@ The template for this project is that used during the OpenGL course: https://www
 
 ### 2. Recreating the original
 
-Recreating the original provided both an understanding of how the geometry was generated, what sort of classes to use to achieve this, and how to exploit the symmetry of the polyhedra to optimise the efficiency of the code. I used similar methods to a previous java implementation found at https://github.com/kevin-shannon/3D-FlowerBox. However I outsourced more work to the shaders to avoid having to refill the Vertex Buffer Object used (VBO).
+Recreating the original provided both an understanding of how the geometry was generated, what sort of classes to use to achieve this, and how to exploit the symmetry of the polyhedra to optimise the efficiency of the code. I used similar methods to a previous java implementation found at https://github.com/kevin-shannon/3D-FlowerBox. However I outsourced more work to the vetex shader to avoid having to refill the Vertex Buffer Object used (VBO).
 
 #### Custom vertex shader
 
