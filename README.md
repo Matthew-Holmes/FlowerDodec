@@ -108,3 +108,46 @@ for (FaceData face : cubeFaceData) {
 	glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);    // draw
 }
 ```
+
+#### Movement
+
+A simple bouncing movement was added, sending the position of the shape to the shaders as a uniform, which will be required in the next step.
+
+### 2. lighting
+The current shape is now geometrically accurate, but wihthout lighting looks flat. The next step was adding diffuse, specular and ambient light in the right proportions, as shown in chapter 9 of https://www.youtube.com/watch?v=45MIykWJ-C4. This required access to normal vectors - unfortunately since the shaders compute individual vertex positions ad hoc this is not so simple.
+
+#### interpolating normals
+
+The geometry calls for interpolating between points on a cube's face, and their normalised counterparts - which we observe lie on the surface of the unit sphere. Thankfully both shapes have trivial normals so we opt to interpolate these too - the mathematically legitmacy of such an operation is questionable, however the res0ults appear realistic.
+
+The vertex shader computes:
+```
+normal = model * ortn * vec4(vec3(0.0, 0.0, 1.0) * (1.0 - morph) + bPos * morph, 1.0);
+```
+Where `(0.0, 0.0, 1.0)` is normal to our default square that lies flat in the X-Y plane, and the `bPos` already is the normal, as well as the position - since lies on the unit sphere. We then pass this onto the fragment shader which computes:
+
+```
+float ambient = 0.1f;
+
+vec3 nnorm = normalize(vec3(normal));
+vec3 lightDirection = normalize(lightPos - vec3(crntPos));
+float diffuse = max(dot(nnorm, lightDirection), 0.0f);
+
+// specular lighting
+float specularLight = 0.33f;
+vec3 viewDirection = normalize(camPos - vec3(crntPos));
+vec3 reflectionDirection = reflect(-lightDirection, nnorm);
+float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 50);
+float specular = specAmount * specularLight;
+
+FragColor = vec4(vertcolor, 1.0f) * lightColor * (ambient + diffuse*(1.0f - ambient - specularLight) + specular);
+```
+
+The result gives our shape a shiny appearance and the appearance of moving against a dark backdrop. We store the apparent position of the viewer relative to the shapes coordinate system in `camPos`.
+
+#### note on performance
+
+Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 100x memory allocation could prove the limiting factor.
+
+An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as the c++ code.
+
