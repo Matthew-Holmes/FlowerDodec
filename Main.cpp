@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shaderClass.h"
@@ -13,29 +14,17 @@
 #include "SurfaceSquare.h"
 #include "FaceData.h"
 
-const unsigned int width = 800;
+const unsigned int width = 1300;
 const unsigned int height = 800;
 
-// Vertices coordinates
-GLfloat vertices[] =
-{ //     COORDINATES     /        COLORS      /
-	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,
-	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,
-	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,
-	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f
-};
+GLfloat x_vel = 0.01f, y_vel = 0.008f;
+GLfloat x_pos = 0.0f, y_pos = 0.0f;
+GLfloat x_max = width / 350.0f, y_max = height / 350.f;
 
-// Indices for vertices order
-GLuint indices[] =
-{
-	0, 1, 2,
-	0, 2, 3,
-	0, 1, 4,
-	1, 2, 4,
-	2, 3, 4,
-	3, 0, 4
-};
+GLfloat zoom = 0.4f;
+
+
+
 
 
 int main() {
@@ -116,18 +105,22 @@ int main() {
 
 	// initialise the matrices we'll need
 	glm::mat4 model = glm::mat4(1.0f); // leave as is since model in the centre
+	glm::mat4 trans = glm::mat4(1.0f);
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 proj = glm::mat4(1.0f);
 	glm::mat4 ortn = glm::mat4(1.0f); // orientation matrix
 
-	// move the world down 0.5 and forward 2.0
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -4.0f));
-	// set our camera,		FOV					aspect ratio		closest furthest we can se
-	proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
+	// move the world down 0.0 and forward 4.0
+	glm::vec3 camPos(0.0f, 0.0f, 4.0f);
+	view = glm::translate(view, -camPos);
+	view = glm::scale(view, glm::vec3(zoom, zoom, zoom));
+	// set our camera,		FOV					aspect ratio       		closest furthest we can see
+	//proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
+	proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
 	// lighting
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::vec3 lightPos = glm::vec3(5.0f, 5.0f, 5.0f); // relative to shape
 
 	// loop until the window is closed
 	while (!glfwWindowShouldClose(window)) {
@@ -142,40 +135,59 @@ int main() {
 		if (crntTime - prevTime >= 1.0f / 60.0f)
 		{
 			rotation += 0.5f;
+			x_pos += x_vel;
+			y_pos += y_vel;
+			if (glm::abs(x_pos) > x_max)
+				x_vel *= -1.0f;
+			if (glm::abs(y_pos) > y_max)
+				y_vel *= -1.0f;
 			prevTime = crntTime;
-			model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+			
+			trans = glm::translate(glm::mat4(1.0f), glm::vec3(x_pos, y_pos, 0.0f));
+			model = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(1.0f, 1.0f, 1.0f));
+
+			int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+			int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+			int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
+			glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+
+			int ortnLoc = glGetUniformLocation(shaderProgram.ID, "ortn");
+			glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(ortn));
+
+			int transLoc = glGetUniformLocation(shaderProgram.ID, "trans");
+			glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+			int morphLoc = glGetUniformLocation(shaderProgram.ID, "morph");
+			glUniform1f(morphLoc, 5 - std::abs(1.6 * std::fmod(prevTime, 7.5f) - 6));
+			int colorLoc = glGetUniformLocation(shaderProgram.ID, "color");
+
+			glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"),
+				lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+			glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"),
+				lightPos.x, lightPos.y, lightPos.z);
+			glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"),
+				camPos.x, camPos.y, camPos.z);
+
+
+
+			// Bind the VAO so OpenGL knows to use it
+			VAO1.Bind();
+			// Draw primitives, number of indices, datatype of indices, index of indices
+			// generalise so we don't need to keep track of the number of indices
+			for (FaceData face : cubeFaceData) {
+				glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation));
+				glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);
+				glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);
+			}
+
+			// Swap the back buffer with the front buffer
+			glfwSwapBuffers(window);
 
 		}
-
-		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-		int ortnLoc = glGetUniformLocation(shaderProgram.ID, "ortn");
-		glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(ortn));
-		int morphLoc = glGetUniformLocation(shaderProgram.ID, "morph");
-		glUniform1f(morphLoc, 5 - std::abs(1.6 * std::fmod(prevTime, 7.5f) - 6));
-		int colorLoc = glGetUniformLocation(shaderProgram.ID, "color");
-
-		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"),
-			lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"),
-			lightPos.x, lightPos.y, lightPos.z);
-
-		// Bind the VAO so OpenGL knows to use it
-		VAO1.Bind();
-		// Draw primitives, number of indices, datatype of indices, index of indices
-		// generalise so we don't need to keep track of the number of indices
-		for (FaceData face : cubeFaceData) {
-			glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation));
-			glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);
-			glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);
-		}
-		
-		// Swap the back buffer with the front buffer
-		glfwSwapBuffers(window);
 		// Take care of all GLFW events
 		glfwPollEvents();
 	}
