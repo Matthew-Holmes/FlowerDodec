@@ -147,7 +147,7 @@ The result gives our shape a shiny appearance and the appearance of moving again
 
 #### note on performance
 
-Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 100x memory allocation could prove the limiting factor.
+Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 500x memory allocation could prove the limiting factor.
 
 An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as the c++ code.
 
