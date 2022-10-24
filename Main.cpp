@@ -12,17 +12,17 @@
 #include "VAO.h"
 
 #include "SurfaceSquare.h"
+#include "SurfacePentagon.h"
 #include "FaceData.h"
+#include "FaceDataGenerator.h"
 
 const unsigned int width = 1300;
 const unsigned int height = 800;
 
+GLfloat zoom = 0.4f;
 GLfloat x_vel = 0.01f, y_vel = 0.008f;
 GLfloat x_pos = 0.0f, y_pos = 0.0f;
 GLfloat x_max = width / 350.0f, y_max = height / 350.f;
-
-GLfloat zoom = 0.4f;
-
 
 
 
@@ -59,17 +59,18 @@ int main() {
 	VAO VAO1;
 	VAO1.Bind();
 
-	SurfaceSquare surface(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
-	//SurfacePentagon surface(4);
+	// SurfaceSquare surface(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
+	SurfacePentagon surface(4);
 	surface.generate();
 	FaceDataGenerator facedatgen;
-	std::vector<FaceData> cubeFaceData = facedatgen.genCubeData();
+	std::vector<FaceData> cubeFaceData = facedatgen.genDodecData();
+
 
 	// TODO update VBO to work with vectors
 	// Generates Vertex Buffer Object and links it to vertices
-	VBO VBO1(&square.vertices[0], square.vertices.size() * sizeof(GLfloat));
+	VBO VBO1(&surface.vertices[0], surface.vertices.size() * sizeof(GLfloat));
 	// Generates Element Buffer Object and links it to indices
-	EBO EBO1(&square.indices[0], square.indices.size() * sizeof(GLuint));
+	EBO EBO1(&surface.indices[0], surface.indices.size() * sizeof(GLuint));
 
 	// Links VBO to VAO
 	// link attributes for coordinates
@@ -85,23 +86,7 @@ int main() {
 	GLfloat prevTime = glfwGetTime();
 
 	// generate the data about the cube faces
-	std::vector<FaceData> cubeFaceData;
-	cubeFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		glm::vec3(0.0f, 1.0f, 0.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		glm::vec3(1.0f, 0.0f, 1.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(1.0f, 0.0f, 0.0f)),
-		glm::vec3(0.0f, 0.0f, 1.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-		glm::vec3(0.0f, 1.0f, 1.0f));
-	cubeFaceData.emplace_back(
-		glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
-		glm::vec3(1.0f, 1.0f, 0.0f));
+
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -184,7 +169,7 @@ int main() {
 			for (FaceData face : cubeFaceData) {
 				glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation));
 				glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);
-				glDrawElements(GL_TRIANGLES, square.indices.size(), GL_UNSIGNED_INT, 0);
+				glDrawElements(GL_TRIANGLES, surface.indices.size(), GL_UNSIGNED_INT, 0);
 			}
 
 			// Swap the back buffer with the front buffer

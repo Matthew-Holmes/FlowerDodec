@@ -38,7 +38,7 @@ void main()
 }
 ```
 
-The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, with the centre of the square at (x, y, z) of (0, 0, 1), hence the circular symmetry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values than in a standard interpolation. (greater than 1)
+The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, with the centre of the square at (x, y, z) of (0, 0, 1), hence the circular symmetry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values than in a standard interpolation. (greater in magnitude than 1)
 
 The VBO stores the vertices on the surface of the face, and their normalised counterparts one after the other in the VBO. This means the VBO can persist for the lifetime of the program, just changing the time variable at each update. Since the `morph` value is a function of time.
 
@@ -147,7 +147,7 @@ The result gives our shape a shiny appearance and the appearance of moving again
 
 #### note on performance
 
-Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 100x memory allocation could prove the limiting factor.
+Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 500x memory allocation could prove the limiting factor.
 
 An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as the c++ code.
 
