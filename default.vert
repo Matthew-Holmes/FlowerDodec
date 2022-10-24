@@ -17,8 +17,10 @@ uniform vec3 color;
 
 void main()
 {
-   crntPos =  trans * model * ortn * vec4(aPos * (1.0 - morph) + bPos * morph, 1.0);
+   vec4 inter = vec4(aPos * (1.0 - morph) + bPos * morph, 1.0);
+   crntPos =  trans * model * ortn * inter;
    gl_Position = proj * view * crntPos;
-   normal = model * ortn * vec4(vec3(0.0, 0.0, 1.0) * (1.0 - morph) + bPos * morph, 1.0);
+   normal = model * ortn * vec4(vec3(0.0, 0.0, 1.0) * (1.0 - morph) + bPos * morph, 1.0)
+          * ( 1 - 2 * int (inter.z < 0.0) );
    vertcolor = color;
 }
