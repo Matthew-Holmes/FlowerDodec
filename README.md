@@ -154,9 +154,14 @@ Here we have opted to trade memory performance for computational - the animation
 
 An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as c++ code.
 
-### 3. Generating mesh for pentagons
+### 3. Implementing a dodecagon
+We now do a similar process to build a dodecahedral version.
 
 When recreating the original we first generated the vertices for a square mesh, and now must do the same for a pentagonal face. 
+
+### 4. Generating mesh for pentagons
+
+
 
 #### The `SurfacePentagon` class
 
