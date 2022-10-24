@@ -201,7 +201,7 @@ Using these values means that the exact same morph as for the cube example will 
 
 ### 5. Generating the face data
 
-Now we generate face orientation and color data for each of the twelve faces.
+Now we generate face orientation and color data for each of the twelve faces. The details for this can be found at: https://en.wikipedia.org/wiki/Regular_dodecahedron#Cartesian_coordinates and https://en.wikipedia.org/wiki/Pentagon#Regular_pentagons
 
 ##### `FaceDataGenerator` 
 
@@ -256,7 +256,7 @@ To yield 12 colors that then updated the color datamember of each `FaceData` obj
 
 ### 6. Tuning
 
-To get a "spikes" to appear later in the animation loop, the morph variable function was updated:
+To get "spikes" to appear later in the animation loop, the morph variable function was updated:
 
 ```
 glUniform1f(morphLoc, spread * (5.33f - std::abs(1.6 * std::fmod(prevTime / spread, 7.5f) - 6)));
