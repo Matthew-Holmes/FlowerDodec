@@ -154,3 +154,110 @@ Here we have opted to trade memory performance for computational - the animation
 
 An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as c++ code.
 
+### 3. Generating mesh for pentagons
+
+When recreating the original we first generated the vertices for a square mesh, and now must do the same for a pentagonal face. 
+
+#### The `SurfacePentagon` class
+
+This class does just that, it is declared as follows:
+
+```
+class SurfacePentagon {
+public:
+	SurfacePentagon(GLuint meshd);
+
+	void generate();
+	std::vector<GLfloat> vertices;
+	std::vector<GLuint> indices;
+private:;
+	void gen_seg();
+	void gen_seg_outline();
+
+	static const GLfloat A;
+	static const GLfloat R;
+	const GLuint mesh_depth;
+};
+```
+The approach taken is to first generate a triangle segment of the pentagon - using methods `gen_seg_outline` and `gen_seg`, then rotate the vertices around to build a pentagon out of five such segments. This was achieved by iterative splitting triangles into four sub-triangles derived from edge midpoints. The variable `mesh_depth` corresponds to how many iterations of this process we do.
+
+We also require constants for the dimensions of the pentagon, we set `A` to be the edge length that ensures our dodecahedron will have an inscibed sphere with unit radius. 
+
+```
+// length of one pentagon side if there is an inscribed unit sphere
+// on a dodahedron
+const GLfloat SurfacePentagon::A = 2.0f / (
+	std::sqrt((5 / 2) + (11 / 10) * std::sqrt(5.0f))
+	);
+// same situation - distance from centre to a vertex
+const GLfloat SurfacePentagon::R = std::sqrt(
+	(5.0f + std::sqrt(5.0f)) / 10.0f) * SurfacePentagon::A;
+```
+
+Using these values means that the exact same morph as for the cube example will occur.
+
+### 4. Generating the face data
+
+Now we generate face orientation and color data for each of the twelve faces.
+
+##### `FaceDataGenerator` 
+
+A simple class was created to store the methods for generating cube or dodecahedron face data, declared:
+```
+class FaceDataGenerator {
+public:
+	std::vector<FaceData> genCubeData();
+	std::vector<FaceData> genDodecData();
+	std::vector<FaceData> genSimpleData();
+};
+```
+
+We then can delegate the tedious computations to the `genDodecData` method:
+
+```
+	GLfloat angle = glm::radians(180.f) - 2.0f * std::atan( (1.0f + std::sqrt(5.0f)) / 2.0f);
+	// angle we rotate at the origin to ensure that the dihedral angle is correct
+	// use total interior angles of a quadrilateral to compute
+	
+	std::vector<FaceData> dodecFaceData;
+	// top face
+	dodecFaceData.emplace_back(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
+	// first face attached to top face
+	dodecFaceData.emplace_back(
+		  glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f))
+		* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+		glm::vec3(1.0f, 0.0f, 0.0f)); 
+	// rotate previous 72 degrees around pole
+	dodecFaceData.emplace_back(
+		glm::rotate(glm::mat4(1.0f), glm::radians(72.0f), glm::vec3(0.0f, 0.0f, 1.0f))
+		* glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f))
+		* glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+		glm::vec3(1.0f, 0.0f, 0.0f)); 
+	// repeat for three remaining faces attached to top pentagon
+	// ...
+```
+Once the top half is generated, these faces were reflected to complete the structure.
+
+#### Color scheme
+
+Finally a color scheme was implemented by cycling through all permutations of the following colors (permuting the R, G and B):
+```
+	std::vector<glm::vec3> cols{
+		glm::vec3(1.0f, 0.0f, 0.f),
+		glm::vec3(0.0f, 1.0f, 1.0f),
+		glm::vec3(0.5f, 0.0f, 1.0f),
+		glm::vec3(1.0f, 0.0f, 0.5f)
+	};
+```
+To yield 12 colors that then updated the color datamember of each `FaceData` object.
+
+#### Tuning
+
+To get a "spikes" to appear later in the animation loop, the morph variable function was updated:
+
+```
+glUniform1f(morphLoc, spread * (5.33f - std::abs(1.6 * std::fmod(prevTime / spread, 7.5f) - 6)));
+```
+A `spread` value of 1.6 is ideal, this results in more extreme values, and thus longer "spikes"  (now they are more 2-dimensional).
+
+
