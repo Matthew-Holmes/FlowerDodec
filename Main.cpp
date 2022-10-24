@@ -59,8 +59,11 @@ int main() {
 	VAO VAO1;
 	VAO1.Bind();
 
-	SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
-	square.generate();
+	SurfaceSquare surface(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
+	//SurfacePentagon surface(4);
+	surface.generate();
+	FaceDataGenerator facedatgen;
+	std::vector<FaceData> cubeFaceData = facedatgen.genCubeData();
 
 	// TODO update VBO to work with vectors
 	// Generates Vertex Buffer Object and links it to vertices
