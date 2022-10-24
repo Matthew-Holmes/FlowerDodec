@@ -19,7 +19,7 @@ private:
 
 	const GLfloat x_initial, y_initial, x_final, y_final;
 	const GLuint x_div, y_div;
-	const GLuint numVert, numInd;
+	const GLuint numVert, numInd; // order matters here (page 290 C++p rimer)
 	std::vector<GLfloat> x_intervals, y_intervals; // mesh variables
 
 };
