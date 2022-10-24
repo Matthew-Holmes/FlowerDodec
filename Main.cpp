@@ -19,10 +19,13 @@
 const unsigned int width = 1300;
 const unsigned int height = 800;
 
-GLfloat zoom = 0.4f;
+GLfloat zoom = 0.5f;
 GLfloat x_vel = 0.01f, y_vel = 0.008f;
 GLfloat x_pos = 0.0f, y_pos = 0.0f;
-GLfloat x_max = width / 350.0f, y_max = height / 350.f;
+GLfloat x_max = width / (zoom * 700.0f), y_max = height / (zoom * 700.0f);
+
+const GLfloat spread = 1.7f; // how extreme we interpolate
+							 // 1.0f corresponds to original 
 
 
 
@@ -63,7 +66,7 @@ int main() {
 	SurfacePentagon surface(4);
 	surface.generate();
 	FaceDataGenerator facedatgen;
-	std::vector<FaceData> cubeFaceData = facedatgen.genDodecData();
+	std::vector<FaceData> dodecFaceData = facedatgen.genDodecData();
 
 
 	// TODO update VBO to work with vectors
@@ -150,7 +153,8 @@ int main() {
 			glUniformMatrix4fv(transLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 			int morphLoc = glGetUniformLocation(shaderProgram.ID, "morph");
-			glUniform1f(morphLoc, 5 - std::abs(1.6 * std::fmod(prevTime, 7.5f) - 6));
+			glUniform1f(morphLoc, spread * (4.5 - std::abs(1.6 * std::fmod(prevTime / spread, 7.5f) - 6)));
+			// glUniform1f(morphLoc, 0.0f); // no morph
 			int colorLoc = glGetUniformLocation(shaderProgram.ID, "color");
 
 			glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"),
@@ -166,7 +170,7 @@ int main() {
 			VAO1.Bind();
 			// Draw primitives, number of indices, datatype of indices, index of indices
 			// generalise so we don't need to keep track of the number of indices
-			for (FaceData face : cubeFaceData) {
+			for (FaceData face : dodecFaceData) {
 				glUniformMatrix4fv(ortnLoc, 1, GL_FALSE, glm::value_ptr(face.orientation));
 				glUniform3f(colorLoc, face.color[0], face.color[1], face.color[2]);
 				glDrawElements(GL_TRIANGLES, surface.indices.size(), GL_UNSIGNED_INT, 0);

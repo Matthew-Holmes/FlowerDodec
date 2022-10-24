@@ -4,7 +4,7 @@
 // length of one pentagon side if there is an inscribed unit sphere
 // on a dodahedron
 const GLfloat SurfacePentagon::A = 2.0f / (
-	std::sqrt((5 / 2) + (11 / 10) * std::sqrt(5.0f))
+	std::sqrt( (5.0f / 2.0f) + (11.0f / 10.0f) * std::sqrt(5.0f) )
 	);
 // same situation - distance from centre to a vertex
 const GLfloat SurfacePentagon::R = std::sqrt(
