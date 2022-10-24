@@ -24,7 +24,7 @@ GLfloat x_vel = 0.01f, y_vel = 0.008f;
 GLfloat x_pos = 0.0f, y_pos = 0.0f;
 GLfloat x_max = width / (zoom * 700.0f), y_max = height / (zoom * 700.0f);
 
-const GLfloat spread = 1.7f; // how extreme we interpolate
+const GLfloat spread = 2.0f; // how extreme we interpolate
 							 // 1.0f corresponds to original 
 
 
@@ -66,7 +66,7 @@ int main() {
 	SurfacePentagon surface(4);
 	surface.generate();
 	FaceDataGenerator facedatgen;
-	std::vector<FaceData> dodecFaceData = facedatgen.genDodecData();
+	std::vector<FaceData> dodecFaceData = facedatgen.genSimpleData();
 
 
 	// TODO update VBO to work with vectors
