@@ -161,8 +161,6 @@ When recreating the original we first generated the vertices for a square mesh, 
 
 ### 4. Generating mesh for pentagons
 
-
-
 #### The `SurfacePentagon` class
 
 This class does just that, it is declared as follows:
@@ -201,7 +199,7 @@ const GLfloat SurfacePentagon::R = std::sqrt(
 
 Using these values means that the exact same morph as for the cube example will occur.
 
-### 4. Generating the face data
+### 5. Generating the face data
 
 Now we generate face orientation and color data for each of the twelve faces.
 
@@ -256,7 +254,7 @@ Finally a color scheme was implemented by cycling through all permutations of th
 ```
 To yield 12 colors that then updated the color datamember of each `FaceData` object.
 
-#### Tuning
+### 6. Tuning
 
 To get a "spikes" to appear later in the animation loop, the morph variable function was updated:
 
