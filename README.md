@@ -10,11 +10,11 @@ The template for this project is that used during the OpenGL course: https://www
 
 ### 2. Recreating the original
 
-Recreating the original provided both an understanding of how the geometry was generated, what sort of classes to use to achieve this, and how to exploit the symmetry of the polyhedra to optimise the efficiency of the code. I used similar methods to a previous java implementation found at https://github.com/kevin-shannon/3D-FlowerBox. However I outsourced more work to the vetex shader to avoid having to refill the Vertex Buffer Object used (VBO).
+Recreating the original provided understanding of how to generate the geometry, what sort of classes to use, and how to exploit the symmetries of the polyhedra to optimise efficiency. I used similar methods to a previous java implementation found at https://github.com/kevin-shannon/3D-FlowerBox. However I outsourced more work to the vetex shader to avoid having to refill the Vertex Buffer Object used (VBO).
 
 #### Custom vertex shader
 
-To both exploit symmetries and use the same VBO I edited the vertex shader used in the tutorial. Now it take two coordinate vectors per vertex and returns an interpolation between them. Also applying an orientation matrix so that the same geometry can be rotated in space to form each side of the cube - which allows for the same single face to be drawn at all sides of the polyhedron. since all vertices in a face have the same color, I made this a uniform variable instead of stored for each vertex in the VBO.
+To both exploit symmetries and use the same VBO throughout the program I edited the vertex shader used in the tutorial. Now it take two coordinate vectors per vertex and returns an interpolation between them. Also applying an orientation matrix so that the same face can be rotated in space to form each side of the cube. since all vertices in a face have the same color, I made color a uniform variable instead of storing for each vertex in the VBO.
 
 ```
 #version 330 core
@@ -38,9 +38,9 @@ void main()
 }
 ```
 
-The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, with the centre of the square at (x, y, z) of (0, 0, 1), hence the circular symmetry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values than in a standard interpolation. (greater in magnitude than 1)
+The "flower" effect is a result of interpolating each point with its normalised (in length) counterpart, where the centre of the square has (x, y, z) coordinates of (0, 0, 1), hence the circular symmetry around the centre. The spiked protrusions later in the animation loop are a result of the interpolation value `morph` taking larger values than in a standard interpolation. (greater in magnitude than 1)
 
-The VBO stores the vertices on the surface of the face, and their normalised counterparts one after the other in the VBO. This means the VBO can persist for the lifetime of the program, just changing the time variable at each update. Since the `morph` value is a function of time.
+The VBO stores the vertices on the surface of the face, and their normalised counterparts one after the other. This means the VBO can persist for the lifetime of the program, just changing the time variable at each update. Since the `morph` value is a function of time.
 
 #### The `SurfaceSquare` class
 
@@ -114,17 +114,20 @@ for (FaceData face : cubeFaceData) {
 A simple bouncing movement was added, sending the position of the shape to the shaders as a uniform, which will be required in the next step.
 
 ### 2. lighting
-The current shape is now geometrically accurate, but wihthout lighting looks flat. The next step was adding diffuse, specular and ambient light in the right proportions, as shown in chapter 9 of https://www.youtube.com/watch?v=45MIykWJ-C4. This required access to normal vectors - unfortunately since the shaders compute individual vertex positions ad hoc this is not so simple.
+The current shape is now geometrically accurate, but wihthout lighting looks flat. The next step was adding diffuse, specular and ambient light in the right proportions, as shown in chapter 9 of https://www.youtube.com/watch?v=45MIykWJ-C4. This required access to normal vectors - unfortunately since the shaders compute individual vertex positions on the fly this is not so simple.
 
 #### interpolating normals
 
-The geometry calls for interpolating between points on a cube's face, and their normalised counterparts - which we observe lie on the surface of the unit sphere. Thankfully both shapes have trivial normals so we opt to interpolate these too - the mathematically legitmacy of such an operation is questionable, however the res0ults appear realistic.
+The geometry interpolates between points on a cube's face, and their normalised counterparts - which we observe lie on the surface of the unit sphere. Thankfully both shapes have trivial normals so we opt to interpolate these too - the mathematically legitmacy of such an operation is questionable, however the results appear realistic.
 
 The vertex shader computes:
 ```
-normal = model * ortn * vec4(vec3(0.0, 0.0, 1.0) * (1.0 - morph) + bPos * morph, 1.0);
+   normal = model * ortn * vec4(vec3(0.0, 0.0, 1.0) * (1.0 - morph) + bPos * morph, 1.0)
+          * ( 1 - 2 * int (inter.z < 0.0) );
 ```
-Where `(0.0, 0.0, 1.0)` is normal to our default square that lies flat in the X-Y plane, and the `bPos` already is the normal, as well as the position - since lies on the unit sphere. We then pass this onto the fragment shader which computes:
+Where `(0.0, 0.0, 1.0)` is normal to our default square that lies flat in the X-Y plane, and the `bPos` already is the normal, as well as the position - since lies on the unit sphere. The lower line with a bool to int conversion adjusts for extreme interpolations that turn the face "inside out", in this case have to invert the normal vector.
+
+We then pass this onto the fragment shader which computes:
 
 ```
 float ambient = 0.1f;
@@ -147,7 +150,7 @@ The result gives our shape a shiny appearance and the appearance of moving again
 
 #### note on performance
 
-Here we have opted to trade memory performance for computational - since the animation loop is only 7.5 seconds we could simply compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 500x memory allocation could prove the limiting factor.
+Here we have opted to trade memory performance for computational - the animation loop is only 7.5 seconds we could compute the geometry for each frame in advance, then compute the normals using traditional methods, and avoid any on the fly calculations. However the given approach was taken since memory reads a more intensive task than flops and this approach allows for the same VBO to be preserved for the entire program. Also for finer meshes this approximate 500x memory allocation could prove the limiting factor.
 
-An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as the c++ code.
+An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as c++ code.
 
