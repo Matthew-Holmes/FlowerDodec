@@ -20,8 +20,5 @@ private:;
 	static const GLfloat A;
 	static const GLfloat R;
 	const GLuint mesh_depth;
-	// const GLuint numVert, numInd;
-	// std::vector<GLfloat> x_intervals, y_intervals; // mesh variables
-
 };
 #endif

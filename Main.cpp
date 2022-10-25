@@ -1,3 +1,6 @@
+
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -16,16 +19,36 @@
 #include "FaceData.h"
 #include "FaceDataGenerator.h"
 
-const unsigned int width = 1300;
-const unsigned int height = 800;
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+const unsigned int width = 1600;
+const unsigned int height = 900;
+
+// 4K 3840 2160
 
 GLfloat zoom = 0.5f;
 GLfloat x_vel = 0.01f, y_vel = 0.008f;
 GLfloat x_pos = 0.0f, y_pos = 0.0f;
-GLfloat x_max = width / (zoom * 700.0f), y_max = height / (zoom * 700.0f);
+GLfloat x_max = width / (zoom * 700.0f), y_max = height / (zoom * 800.0f);
 
 const GLfloat spread = 1.60; // how extreme we interpolate
 							 // 1.0f corresponds to original
+
+void saveImage(char* filepath, GLFWwindow* w) {
+	int width, height;
+	glfwGetWindowSize(w, &width, &height);
+	GLsizei nrChannels = 3;
+	GLsizei stride = nrChannels * width;
+	stride += (stride % 4) ? (4 - stride % 4) : 0;
+	GLsizei bufferSize = stride * height;
+	std::vector<char> buffer(bufferSize);
+	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+	glReadBuffer(GL_FRONT);
+	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+	stbi_flip_vertically_on_write(true);
+	stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
+}
 
 int main() {
 	// *********   init   ********************
@@ -35,7 +58,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	// create the window
-	GLFWwindow* window = glfwCreateWindow(width, height, "FlowerDodec", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "FlowerDodec", glfwGetPrimaryMonitor(), NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -43,6 +66,7 @@ int main() {
 	}
 	// now tell glfw to use the window we just created
 	glfwMakeContextCurrent(window);
+
 	// have glad load the needed configurations for openGl
 	gladLoadGL();
 	// tell openGL the area of the window we want it to render in
@@ -52,7 +76,7 @@ int main() {
 	// **********  compute geometry  **************************
 
 	//SurfaceSquare surface(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
-	SurfacePentagon surface(4);
+	SurfacePentagon surface(5);
 	surface.generate();
 	FaceDataGenerator facedatgen;
 	std::vector<FaceData> dodecFaceData = facedatgen.genDodecData();
@@ -107,7 +131,8 @@ int main() {
 
 
 	// ************************ main loop *******************************
-	
+	int cnt = 0;
+	GLfloat morphTime = 0.0f;
 	// loop until the window is closed
 	while (!glfwWindowShouldClose(window)) {
 		// Specify the color of the background
@@ -117,11 +142,13 @@ int main() {
 		// Tell OpenGL which Shader Program we want to use
 		shaderProgram.Activate();
 		GLfloat crntTime = glfwGetTime();
+		
 
 		// **************** frame update *************************
 		if (crntTime - prevTime >= 1.0f / 60.0f)
 		{
 			// update position and rotation of shape
+			morphTime += 1.0f / 60.0f;
 			rotation += 0.5f;
 			x_pos += x_vel;
 			y_pos += y_vel;
@@ -154,7 +181,7 @@ int main() {
 
 			// morph uniform
 			int morphLoc = glGetUniformLocation(shaderProgram.ID, "morph");
-			glUniform1f(morphLoc, spread * (5.33f - std::abs(1.6 * std::fmod(prevTime / spread, 7.5f) - 6)));
+			glUniform1f(morphLoc, spread * (5.33f - std::abs(1.6 * std::fmod(morphTime / spread, 7.5f) - 6)));
 			// glUniform1f(morphLoc, 0.0f); // no morph
 
 			// uniforms for colors and lighting computations
@@ -180,6 +207,24 @@ int main() {
 
 			// Swap the back buffer with the front buffer
 			glfwSwapBuffers(window);
+			
+			std::string file = "images/";
+			std::string padding(5 - std::to_string(cnt).size(), '0');
+			file.append(padding);
+			file.append(std::to_string(cnt));
+			file.append(".png");
+
+			char arr[128];
+			strcpy_s(arr, 128, file.c_str());
+
+			std::cout << file << std::endl;
+			
+			saveImage(arr, window);
+			cnt++;
+			if (cnt > 99999) {
+				//continue;
+				break;
+			}
 
 		}
 		// Take care of all GLFW events
@@ -199,3 +244,4 @@ int main() {
 	glfwTerminate();
 	return 0;
 }
+

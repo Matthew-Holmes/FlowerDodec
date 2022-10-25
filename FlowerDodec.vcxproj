@@ -156,6 +156,7 @@
     <ClInclude Include="FaceData.h" />
     <ClInclude Include="FaceDataGenerator.h" />
     <ClInclude Include="shaderClass.h" />
+    <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="SurfacePentagon.h" />
     <ClInclude Include="SurfaceSquare.h" />
     <ClInclude Include="VAO.h" />
