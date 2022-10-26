@@ -2,6 +2,8 @@
 
 A recreation of the classic microsoft flowerbox screensaver in OpenGL - except now with a dodecahedron.
 
+https://www.youtube.com/watch?v=8LjG2qmj92Y
+
 ## Process
 
 ### 1. Template
@@ -263,4 +265,9 @@ glUniform1f(morphLoc, spread * (5.33f - std::abs(1.6 * std::fmod(prevTime / spre
 ```
 A `spread` value of 1.6 is ideal, this results in more extreme values, and thus longer "spikes"  (now they are more 2-dimensional).
 
+### 7. The result
+
+https://www.youtube.com/watch?v=8LjG2qmj92Y
+
+The video was produced by saving each frame as a .png file then stitching them together using ffmeg. To save the images `stb_image_write.h` was used: https://github.com/nothings/stb/blob/master/stb_image_write.h. 
 
