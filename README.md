@@ -116,7 +116,7 @@ for (FaceData face : cubeFaceData) {
 A simple bouncing movement was added, sending the position of the shape to the shaders as a uniform, which will be required in the next step.
 
 ### 2. lighting
-The current shape is now geometrically accurate, but wihthout lighting looks flat. The next step was adding diffuse, specular and ambient light in the right proportions, as shown in chapter 9 of https://www.youtube.com/watch?v=45MIykWJ-C4. This required access to normal vectors - unfortunately since the shaders compute individual vertex positions on the fly this is not so simple.
+The current shape is now geometrically accurate, but without lighting looks flat. The next step was adding diffuse, specular and ambient light in the right proportions, as shown in chapter 9 of https://www.youtube.com/watch?v=45MIykWJ-C4. This required access to normal vectors - unfortunately since the shaders compute individual vertex positions on the fly this is not so simple.
 
 #### interpolating normals
 
