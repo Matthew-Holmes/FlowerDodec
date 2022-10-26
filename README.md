@@ -163,7 +163,7 @@ When recreating the original we first generated the vertices for a square mesh, 
 
 #### The `SurfacePentagon` class
 
-This class does just that, it is declared as follows:
+This class represents just that, it is declared as follows:
 
 ```
 class SurfacePentagon {
