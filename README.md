@@ -155,7 +155,7 @@ Here we have opted to trade memory performance for computational - since the ani
 An alternative would be to compute the geometry and normals each step to fill a buffer, keeping memory demands low, however this effectively already accomplished by the shaders and so would only be preferable if we believed the shader programs could not perform the task as effiently as c++ code.
 
 ### 3. Implementing a dodecagon
-We now do a similar process to build a dodecahedral version.
+We now do follow the same steps, but with dodecahedral geometry. The key idea is interpolating points between the surface of a dodecahedron and their corresponding point on the surface of an inscribed unit sphere. I.e a sphere radius 1 which touches each pentagonal face in the centre. We have all the necessary machinery in place to achieve this, all that remains is to encode the data for vertices, colors and orientations for the 12 sided dodecahedron.
 
 When recreating the original we first generated the vertices for a square mesh, and now must do the same for a pentagonal face. 
 
