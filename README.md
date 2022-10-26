@@ -245,7 +245,7 @@ Once the top half is generated, these faces were reflected to complete the struc
 
 #### Color scheme
 
-Finally a color scheme was implemented by cycling through all permutations of the following colors (permuting the R, G and B):
+Finally a color scheme was implemented by cycling through all cyclic permutations of the following colors (permuting the R, G and B):
 ```
 	std::vector<glm::vec3> cols{
 		glm::vec3(1.0f, 0.0f, 0.f),
