@@ -67,7 +67,7 @@ private:
 
 };
 ```
-Once provided with initial coordinates for the square, and a granularity for the mesh divisions, we can called `generate()` to fill vectors with the vertices and indices required, and then fill the buffers:
+Once provided with initial coordinates for the square, and a granularity for the mesh divisions, we can calle `generate()` to fill vectors with the vertices and indices required, and then fill the buffers:
 ```
 SurfaceSquare square(-1.0f, -1.0f, 1.0f, 1.0f, 50, 50);
 square.generate();
